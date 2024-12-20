@@ -1,0 +1,28 @@
+app:
+  env: dev
+
+server:
+  port: 8080
+
+cors:
+  allowOrigins:
+    - "http://localhost:3000"
+    - "http://localhost:8000"
+  allowMethods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "DELETE"
+    - "OPTIONS"
+  allowHeaders:
+    - "Origin"
+    - "Content-Type"
+    - "Accept"
+  exposeHeaders:
+    - "Content-Length"
+    - "Content-Type"
+  allowCredentials: false
+
+db:
+  type: mysql
+  dsn: "user:password@tcp(localhost:3306)/golang_test_db?parseTime=true"
