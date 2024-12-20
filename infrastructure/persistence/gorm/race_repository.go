@@ -9,20 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// RaceRepositoryGorm is a concrete implementation of the RaceRepository interface using GORM.
-type RaceRepositoryGorm struct {
+// raceRepositoryGorm is a concrete implementation of the RaceRepository interface using GORM.
+type raceRepositoryGorm struct {
 	db *gorm.DB
 }
 
-// NewGormRaceRepository creates a new instance of RaceRepositoryGorm.
+// NewGormRaceRepository creates a new instance of raceRepositoryGorm.
 func NewGormRaceRepository(db *gorm.DB) repositories.RaceRepository {
-	return &RaceRepositoryGorm{
+	return &raceRepositoryGorm{
 		db: db,
 	}
 }
 
 // GetAllRaces retrieves all races from the database, including their related entities.
-func (r *RaceRepositoryGorm) GetAllRaces() ([]entities.Race, error) {
+func (r *raceRepositoryGorm) GetAllRaces() ([]entities.Race, error) {
 	var races []entities.Race
 	if err := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
@@ -37,7 +37,7 @@ func (r *RaceRepositoryGorm) GetAllRaces() ([]entities.Race, error) {
 }
 
 // GetRaceByID retrieves a race by its ID, including its related entities.
-func (r *RaceRepositoryGorm) GetRaceByID(id uint) (*entities.Race, error) {
+func (r *raceRepositoryGorm) GetRaceByID(id uint) (*entities.Race, error) {
 	var race entities.Race
 	if err := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
@@ -55,7 +55,7 @@ func (r *RaceRepositoryGorm) GetRaceByID(id uint) (*entities.Race, error) {
 }
 
 // GetRaceByName retrieves a race by its name, including its related entities.
-func (r *RaceRepositoryGorm) GetRaceByName(name string) (*entities.Race, error) {
+func (r *raceRepositoryGorm) GetRaceByName(name string) (*entities.Race, error) {
 	var race entities.Race
 	if err := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
@@ -74,7 +74,7 @@ func (r *RaceRepositoryGorm) GetRaceByName(name string) (*entities.Race, error) 
 }
 
 // CreateRace adds a new race to the database along with its related entities.
-func (r *RaceRepositoryGorm) CreateRace(race *entities.Race) error {
+func (r *raceRepositoryGorm) CreateRace(race *entities.Race) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -99,7 +99,7 @@ func (r *RaceRepositoryGorm) CreateRace(race *entities.Race) error {
 }
 
 // UpdateRace updates an existing race's details in the database.
-func (r *RaceRepositoryGorm) UpdateRace(id uint, race *entities.Race) error {
+func (r *raceRepositoryGorm) UpdateRace(id uint, race *entities.Race) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -172,7 +172,7 @@ func (r *RaceRepositoryGorm) UpdateRace(id uint, race *entities.Race) error {
 }
 
 // DeleteRace removes a race from the database.
-func (r *RaceRepositoryGorm) DeleteRace(id uint) error {
+func (r *raceRepositoryGorm) DeleteRace(id uint) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -202,7 +202,7 @@ func (r *RaceRepositoryGorm) DeleteRace(id uint) error {
 }
 
 // AddSubrace adds a subrace to a specific race.
-func (r *RaceRepositoryGorm) AddSubrace(raceID uint, subrace *entities.Subrace) error {
+func (r *raceRepositoryGorm) AddSubrace(raceID uint, subrace *entities.Subrace) error {
 	var race entities.Race
 	if err := r.db.First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -220,7 +220,7 @@ func (r *RaceRepositoryGorm) AddSubrace(raceID uint, subrace *entities.Subrace) 
 }
 
 // RemoveSubrace removes a subrace from a specific race.
-func (r *RaceRepositoryGorm) RemoveSubrace(raceID uint, subraceID uint) error {
+func (r *raceRepositoryGorm) RemoveSubrace(raceID uint, subraceID uint) error {
 	var subrace entities.Subrace
 	if err := r.db.Where("id = ? AND race_id = ?", subraceID, raceID).First(&subrace).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -237,7 +237,7 @@ func (r *RaceRepositoryGorm) RemoveSubrace(raceID uint, subraceID uint) error {
 }
 
 // AddTrait associates a trait with a specific race.
-func (r *RaceRepositoryGorm) AddTrait(raceID uint, traitID uint) error {
+func (r *raceRepositoryGorm) AddTrait(raceID uint, traitID uint) error {
 	var race entities.Race
 	if err := r.db.Preload("Traits").First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -258,7 +258,7 @@ func (r *RaceRepositoryGorm) AddTrait(raceID uint, traitID uint) error {
 }
 
 // RemoveTrait dissociates a trait from a specific race.
-func (r *RaceRepositoryGorm) RemoveTrait(raceID uint, traitID uint) error {
+func (r *raceRepositoryGorm) RemoveTrait(raceID uint, traitID uint) error {
 	var race entities.Race
 	if err := r.db.Preload("Traits").First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -279,7 +279,7 @@ func (r *RaceRepositoryGorm) RemoveTrait(raceID uint, traitID uint) error {
 }
 
 // SearchRaces allows searching for races based on specific criteria.
-func (r *RaceRepositoryGorm) SearchRaces(criteria map[string]string) ([]entities.Race, error) {
+func (r *raceRepositoryGorm) SearchRaces(criteria map[string]string) ([]entities.Race, error) {
 	var races []entities.Race
 	query := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
