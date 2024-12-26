@@ -24,5 +24,5 @@ cors:
   allowCredentials: false
 
 db:
-  type: mysql
-  dsn: "user:password@tcp(localhost:3306)/golang_test_db?parseTime=true"
+  type: postgres
+  dsn: "postgres://user:password@localhost:5432/dnd_db?sslmode=disable"

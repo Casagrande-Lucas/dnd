@@ -48,18 +48,13 @@ func GetDBFactory() *FactoryDB {
 }
 
 // CreatePostgresConnection creates a new Postgres connection and registers it with the factory.
-func (f *FactoryDB) CreatePostgresConnection(name, host, port, user, password, dbname string) (DB, error) {
+func (f *FactoryDB) CreatePostgresConnection(name, dsn string) (DB, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
 	if conn, exists := f.connections[name]; exists {
 		return conn, nil
 	}
-
-	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname,
-	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
