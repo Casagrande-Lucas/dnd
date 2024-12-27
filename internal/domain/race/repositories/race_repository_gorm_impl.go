@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Casagrande-Lucas/dnd/internal/domain/race/entities"
+	"github.com/Casagrande-Lucas/dnd/internal/domain/race/models"
 	"gorm.io/gorm"
 )
 
@@ -21,8 +21,8 @@ func NewGormRaceRepository(db *gorm.DB) RaceRepository {
 }
 
 // GetAllRaces retrieves all races from the database, including their related entities.
-func (r *raceRepositoryGormImpl) GetAllRaces() ([]entities.Race, error) {
-	var races []entities.Race
+func (r *raceRepositoryGormImpl) GetAllRaces() ([]*models.Race, error) {
+	var races []*models.Race
 	if err := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
 		Preload("Traits").
@@ -36,8 +36,8 @@ func (r *raceRepositoryGormImpl) GetAllRaces() ([]entities.Race, error) {
 }
 
 // GetRaceByID retrieves a race by its ID, including its related entities.
-func (r *raceRepositoryGormImpl) GetRaceByID(id uint) (*entities.Race, error) {
-	var race entities.Race
+func (r *raceRepositoryGormImpl) GetRaceByID(id uint) (*models.Race, error) {
+	var race models.Race
 	if err := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
 		Preload("Traits").
@@ -54,8 +54,8 @@ func (r *raceRepositoryGormImpl) GetRaceByID(id uint) (*entities.Race, error) {
 }
 
 // GetRaceByName retrieves a race by its name, including its related entities.
-func (r *raceRepositoryGormImpl) GetRaceByName(name string) (*entities.Race, error) {
-	var race entities.Race
+func (r *raceRepositoryGormImpl) GetRaceByName(name string) (*models.Race, error) {
+	var race models.Race
 	if err := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
 		Preload("Traits").
@@ -73,7 +73,7 @@ func (r *raceRepositoryGormImpl) GetRaceByName(name string) (*entities.Race, err
 }
 
 // CreateRace adds a new race to the database along with its related entities.
-func (r *raceRepositoryGormImpl) CreateRace(race *entities.Race) error {
+func (r *raceRepositoryGormImpl) CreateRace(race *models.Race) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -98,7 +98,7 @@ func (r *raceRepositoryGormImpl) CreateRace(race *entities.Race) error {
 }
 
 // UpdateRace updates an existing race's details in the database.
-func (r *raceRepositoryGormImpl) UpdateRace(id uint, race *entities.Race) error {
+func (r *raceRepositoryGormImpl) UpdateRace(id uint, race *models.Race) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -110,7 +110,7 @@ func (r *raceRepositoryGormImpl) UpdateRace(id uint, race *entities.Race) error 
 		}
 	}()
 
-	var existingRace entities.Race
+	var existingRace models.Race
 	if err := tx.Preload("Proficiencies").
 		Preload("LanguagesKnown").
 		Preload("Traits").
@@ -183,7 +183,7 @@ func (r *raceRepositoryGormImpl) DeleteRace(id uint) error {
 		}
 	}()
 
-	var race entities.Race
+	var race models.Race
 	if err := tx.First(&race, id).Error; err != nil {
 		tx.Rollback()
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -201,8 +201,8 @@ func (r *raceRepositoryGormImpl) DeleteRace(id uint) error {
 }
 
 // AddSubrace adds a subrace to a specific race.
-func (r *raceRepositoryGormImpl) AddSubrace(raceID uint, subrace *entities.Subrace) error {
-	var race entities.Race
+func (r *raceRepositoryGormImpl) AddSubrace(raceID uint, subrace *models.Subrace) error {
+	var race models.Race
 	if err := r.db.First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("race with ID %d not found", raceID)
@@ -220,7 +220,7 @@ func (r *raceRepositoryGormImpl) AddSubrace(raceID uint, subrace *entities.Subra
 
 // RemoveSubrace removes a subrace from a specific race.
 func (r *raceRepositoryGormImpl) RemoveSubrace(raceID uint, subraceID uint) error {
-	var subrace entities.Subrace
+	var subrace models.Subrace
 	if err := r.db.Where("id = ? AND race_id = ?", subraceID, raceID).First(&subrace).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("subrace with ID %d not found for race ID %d", subraceID, raceID)
@@ -237,7 +237,7 @@ func (r *raceRepositoryGormImpl) RemoveSubrace(raceID uint, subraceID uint) erro
 
 // AddTrait associates a trait with a specific race.
 func (r *raceRepositoryGormImpl) AddTrait(raceID uint, traitID uint) error {
-	var race entities.Race
+	var race models.Race
 	if err := r.db.Preload("Traits").First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("race with ID %d not found", raceID)
@@ -245,7 +245,7 @@ func (r *raceRepositoryGormImpl) AddTrait(raceID uint, traitID uint) error {
 		return err
 	}
 
-	var trait entities.Trait
+	var trait models.Trait
 	if err := r.db.First(&trait, traitID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("trait with ID %d not found", traitID)
@@ -258,7 +258,7 @@ func (r *raceRepositoryGormImpl) AddTrait(raceID uint, traitID uint) error {
 
 // RemoveTrait dissociates a trait from a specific race.
 func (r *raceRepositoryGormImpl) RemoveTrait(raceID uint, traitID uint) error {
-	var race entities.Race
+	var race models.Race
 	if err := r.db.Preload("Traits").First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("race with ID %d not found", raceID)
@@ -266,7 +266,7 @@ func (r *raceRepositoryGormImpl) RemoveTrait(raceID uint, traitID uint) error {
 		return err
 	}
 
-	var trait entities.Trait
+	var trait models.Trait
 	if err := r.db.First(&trait, traitID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("trait with ID %d not found", traitID)
@@ -278,8 +278,8 @@ func (r *raceRepositoryGormImpl) RemoveTrait(raceID uint, traitID uint) error {
 }
 
 // SearchRaces allows searching for races based on specific criteria.
-func (r *raceRepositoryGormImpl) SearchRaces(criteria map[string]string) ([]entities.Race, error) {
-	var races []entities.Race
+func (r *raceRepositoryGormImpl) SearchRaces(criteria map[string]string) ([]models.Race, error) {
+	var races []models.Race
 	query := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
 		Preload("Traits").

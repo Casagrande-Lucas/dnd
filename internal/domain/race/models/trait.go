@@ -1,4 +1,4 @@
-package entities
+package models
 
 type Trait struct {
 	ID          uint   `json:"id" gorm:"primaryKey"`

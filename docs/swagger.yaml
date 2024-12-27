@@ -1,0 +1,147 @@
+basePath: /api/v1
+definitions:
+  httperror.ErrorMSG:
+    properties:
+      error_code:
+        type: string
+      error_msg:
+        type: string
+    type: object
+  models.AbilityBonus:
+    properties:
+      charisma:
+        type: integer
+      constitution:
+        type: integer
+      dexterity:
+        type: integer
+      intelligence:
+        type: integer
+      strength:
+        type: integer
+      wisdom:
+        type: integer
+    type: object
+  models.Age:
+    properties:
+      average_lifespan:
+        type: string
+      maximum_age:
+        type: integer
+      minimum_age:
+        type: integer
+      race_id:
+        type: integer
+    type: object
+  models.Language:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.Proficiency:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.Race:
+    properties:
+      ability_score_bonuses:
+        $ref: '#/definitions/models.AbilityBonus'
+      age:
+        $ref: '#/definitions/models.Age'
+      alignment:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      languages:
+        items:
+          $ref: '#/definitions/models.Language'
+        type: array
+      languages_known:
+        items:
+          $ref: '#/definitions/models.Language'
+        type: array
+      name:
+        type: string
+      proficiencies:
+        items:
+          $ref: '#/definitions/models.Proficiency'
+        type: array
+      size:
+        type: string
+      speed:
+        type: integer
+      subraces:
+        items:
+          $ref: '#/definitions/models.Subrace'
+        type: array
+      traits:
+        items:
+          $ref: '#/definitions/models.Trait'
+        type: array
+    type: object
+  models.Subrace:
+    properties:
+      ability_score_bonuses:
+        $ref: '#/definitions/models.AbilityBonus'
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      race_id:
+        type: integer
+    type: object
+  models.Trait:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: dev.casagrande@gmail.com
+    name: Lucas Casagrande
+    url: http://github.com/Casagrande-Lucas
+  description: API D&D 5e card game.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: D&D 5e API
+  version: "1.0"
+paths:
+  /races:
+    get:
+      consumes:
+      - application/json
+      description: Return all registered races
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Race'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperror.ErrorMSG'
+      summary: List all races
+      tags:
+      - Races
+swagger: "2.0"

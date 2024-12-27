@@ -1,0 +1,224 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API D\u0026D 5e card game.",
+        "title": "D\u0026D 5e API",
+        "contact": {
+            "name": "Lucas Casagrande",
+            "url": "http://github.com/Casagrande-Lucas",
+            "email": "dev.casagrande@gmail.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/races": {
+            "get": {
+                "description": "Return all registered races",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Races"
+                ],
+                "summary": "List all races",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Race"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.ErrorMSG"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "httperror.ErrorMSG": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "string"
+                },
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AbilityBonus": {
+            "type": "object",
+            "properties": {
+                "charisma": {
+                    "type": "integer"
+                },
+                "constitution": {
+                    "type": "integer"
+                },
+                "dexterity": {
+                    "type": "integer"
+                },
+                "intelligence": {
+                    "type": "integer"
+                },
+                "strength": {
+                    "type": "integer"
+                },
+                "wisdom": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Age": {
+            "type": "object",
+            "properties": {
+                "average_lifespan": {
+                    "type": "string"
+                },
+                "maximum_age": {
+                    "type": "integer"
+                },
+                "minimum_age": {
+                    "type": "integer"
+                },
+                "race_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Language": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Proficiency": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Race": {
+            "type": "object",
+            "properties": {
+                "ability_score_bonuses": {
+                    "$ref": "#/definitions/models.AbilityBonus"
+                },
+                "age": {
+                    "$ref": "#/definitions/models.Age"
+                },
+                "alignment": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "languages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Language"
+                    }
+                },
+                "languages_known": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Language"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "proficiencies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Proficiency"
+                    }
+                },
+                "size": {
+                    "type": "string"
+                },
+                "speed": {
+                    "type": "integer"
+                },
+                "subraces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Subrace"
+                    }
+                },
+                "traits": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Trait"
+                    }
+                }
+            }
+        },
+        "models.Subrace": {
+            "type": "object",
+            "properties": {
+                "ability_score_bonuses": {
+                    "$ref": "#/definitions/models.AbilityBonus"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "race_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Trait": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

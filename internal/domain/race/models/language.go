@@ -1,4 +1,4 @@
-package entities
+package models
 
 type Language struct {
 	ID   uint   `json:"id" gorm:"primaryKey"`

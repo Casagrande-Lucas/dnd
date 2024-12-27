@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Casagrande-Lucas/dnd/internal/domain/race/entities"
+	"github.com/Casagrande-Lucas/dnd/internal/domain/race/models"
 	"github.com/Casagrande-Lucas/dnd/internal/domain/race/services"
+	"github.com/Casagrande-Lucas/dnd/pkg/httperror"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,11 +22,21 @@ func NewRaceControllerGin(service services.RaceService) RaceController {
 	}
 }
 
+// GetAllRaces godoc
+// @Summary List all races
+// @Description Return all registered races
+// @Tags Races
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} models.Race
+// @Failure 500 {object} httperror.ErrorMSG
+// @Router /races [get]
 // GetAllRaces handles GET /races to retrieve all races.
 func (c *raceControllerGin) GetAllRaces(ctx *gin.Context) {
 	races, err := c.service.ListRaces()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ErrorMSG)
 		return
 	}
 	ctx.JSON(http.StatusOK, races)
@@ -50,7 +61,7 @@ func (c *raceControllerGin) GetRaceByID(ctx *gin.Context) {
 
 // CreateRace handles POST /races to create a new race.
 func (c *raceControllerGin) CreateRace(ctx *gin.Context) {
-	var race entities.Race
+	var race models.Race
 	if err := ctx.ShouldBindJSON(&race); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
 		return
@@ -72,7 +83,7 @@ func (c *raceControllerGin) UpdateRace(ctx *gin.Context) {
 		return
 	}
 
-	var race entities.Race
+	var race models.Race
 	if err := ctx.ShouldBindJSON(&race); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
 		return
@@ -110,7 +121,7 @@ func (c *raceControllerGin) AddSubrace(ctx *gin.Context) {
 		return
 	}
 
-	var subrace entities.Subrace
+	var subrace models.Subrace
 	if err := ctx.ShouldBindJSON(&subrace); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
 		return

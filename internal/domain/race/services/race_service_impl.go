@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Casagrande-Lucas/dnd/internal/domain/race/entities"
+	"github.com/Casagrande-Lucas/dnd/internal/domain/race/models"
 	"github.com/Casagrande-Lucas/dnd/internal/domain/race/repositories"
+	"github.com/Casagrande-Lucas/dnd/pkg/failure"
 )
 
 // raceServiceImpl is the concrete implementation of RaceService.
@@ -20,15 +21,15 @@ func NewRaceService(repo repositories.RaceRepository) RaceService {
 	}
 }
 
-func (s *raceServiceImpl) ListRaces() ([]entities.Race, error) {
+func (s *raceServiceImpl) ListRaces() ([]*models.Race, error) {
 	races, err := s.repo.GetAllRaces()
 	if err != nil {
-		return nil, fmt.Errorf("failed to list all races: %w", err)
+		return nil, failure.NewError(failure.ErrorInternalServer, err)
 	}
 	return races, nil
 }
 
-func (s *raceServiceImpl) GetRaceDetails(id uint) (*entities.Race, error) {
+func (s *raceServiceImpl) GetRaceDetails(id uint) (*models.Race, error) {
 	if id == 0 {
 		return nil, fmt.Errorf("invalid race ID: %d", id)
 	}
@@ -40,7 +41,7 @@ func (s *raceServiceImpl) GetRaceDetails(id uint) (*entities.Race, error) {
 	return race, nil
 }
 
-func (s *raceServiceImpl) RegisterRace(race *entities.Race) error {
+func (s *raceServiceImpl) RegisterRace(race *models.Race) error {
 	if err := validateRace(race); err != nil {
 		return fmt.Errorf("invalid race data: %w", err)
 	}
@@ -56,7 +57,7 @@ func (s *raceServiceImpl) RegisterRace(race *entities.Race) error {
 	return nil
 }
 
-func (s *raceServiceImpl) UpdateRaceInfo(id uint, race *entities.Race) error {
+func (s *raceServiceImpl) UpdateRaceInfo(id uint, race *models.Race) error {
 	if id == 0 {
 		return fmt.Errorf("invalid race ID: %d", id)
 	}
@@ -99,7 +100,7 @@ func (s *raceServiceImpl) RemoveRace(id uint) error {
 	return nil
 }
 
-func (s *raceServiceImpl) AddSubraceToRace(raceID uint, subrace *entities.Subrace) error {
+func (s *raceServiceImpl) AddSubraceToRace(raceID uint, subrace *models.Subrace) error {
 	if raceID == 0 {
 		return fmt.Errorf("invalid race ID: %d", raceID)
 	}
@@ -150,7 +151,7 @@ func (s *raceServiceImpl) UnassignTraitFromRace(raceID uint, traitID uint) error
 	return nil
 }
 
-func (s *raceServiceImpl) FindRaces(criteria map[string]string) ([]entities.Race, error) {
+func (s *raceServiceImpl) FindRaces(criteria map[string]string) ([]models.Race, error) {
 	if len(criteria) == 0 {
 		return nil, errors.New("no search criteria provided")
 	}
@@ -162,7 +163,7 @@ func (s *raceServiceImpl) FindRaces(criteria map[string]string) ([]entities.Race
 	return races, nil
 }
 
-func validateRace(race *entities.Race) error {
+func validateRace(race *models.Race) error {
 	if race.Name == "" {
 		return errors.New("race name cannot be empty")
 	}
@@ -219,7 +220,7 @@ func validateRace(race *entities.Race) error {
 	return nil
 }
 
-func validateAbilityBonus(bonus *entities.AbilityBonus) error {
+func validateAbilityBonus(bonus *models.AbilityBonus) error {
 	var errMsgs []string
 
 	if bonus.Strength < 0 {
@@ -248,7 +249,7 @@ func validateAbilityBonus(bonus *entities.AbilityBonus) error {
 	return nil
 }
 
-func validateAge(age *entities.Age) error {
+func validateAge(age *models.Age) error {
 	if age.AverageLifespan == "" {
 		return errors.New("average lifespan cannot be empty")
 	}
@@ -261,28 +262,28 @@ func validateAge(age *entities.Age) error {
 	return nil
 }
 
-func validateProficiency(prof *entities.Proficiency) error {
+func validateProficiency(prof *models.Proficiency) error {
 	if prof.Name == "" {
 		return errors.New("proficiency name cannot be empty")
 	}
 	return nil
 }
 
-func validateLanguage(lang *entities.Language) error {
+func validateLanguage(lang *models.Language) error {
 	if lang.Name == "" {
 		return errors.New("language name cannot be empty")
 	}
 	return nil
 }
 
-func validateTrait(trait *entities.Trait) error {
+func validateTrait(trait *models.Trait) error {
 	if trait.Name == "" {
 		return errors.New("trait name cannot be empty")
 	}
 	return nil
 }
 
-func validateSubrace(subrace *entities.Subrace) error {
+func validateSubrace(subrace *models.Subrace) error {
 	if subrace.Name == "" {
 		return errors.New("subrace name cannot be empty")
 	}

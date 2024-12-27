@@ -1,9 +1,24 @@
+// @title D&D 5e API
+// @version 1.0
+// @description API D&D 5e card game.
+
+// @contact.name Lucas Casagrande
+// @contact.url http://github.com/Casagrande-Lucas
+// @contact.email dev.casagrande@gmail.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api/v1
+
 package main
 
 import (
 	"log"
 
 	"github.com/Casagrande-Lucas/dnd/config"
+	_ "github.com/Casagrande-Lucas/dnd/docs"
 	"github.com/Casagrande-Lucas/dnd/infrastructure/db"
 	"github.com/Casagrande-Lucas/dnd/internal/interfaces/api"
 	"github.com/gin-gonic/gin"

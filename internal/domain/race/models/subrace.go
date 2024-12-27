@@ -1,4 +1,4 @@
-package entities
+package models
 
 type Subrace struct {
 	ID                  uint         `json:"id" gorm:"primaryKey"`

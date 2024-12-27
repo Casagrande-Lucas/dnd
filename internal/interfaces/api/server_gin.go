@@ -7,6 +7,8 @@ import (
 	"github.com/Casagrande-Lucas/dnd/internal/domain/race/services"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 )
 
@@ -71,6 +73,8 @@ func (g *ginServer) RegisterServerRoutes() {
 			raceV1Group.GET("/search", raceController.SearchRaces)
 		}
 	}
+
+	g.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func (g *ginServer) StartServer() error {

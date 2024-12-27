@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Casagrande-Lucas/dnd/internal/domain/race/entities"
+	"github.com/Casagrande-Lucas/dnd/internal/domain/race/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -64,12 +64,12 @@ func (f *FactoryDB) CreatePostgresConnection(name, dsn string) (DB, error) {
 	}
 
 	if err := db.AutoMigrate(
-		&entities.Race{},
-		&entities.Age{},
-		&entities.Trait{},
-		&entities.Subrace{},
-		&entities.Language{},
-		&entities.Proficiency{},
+		&models.Race{},
+		&models.Age{},
+		&models.Trait{},
+		&models.Subrace{},
+		&models.Language{},
+		&models.Proficiency{},
 	); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}

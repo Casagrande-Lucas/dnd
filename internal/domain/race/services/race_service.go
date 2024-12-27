@@ -1,16 +1,16 @@
 package services
 
-import "github.com/Casagrande-Lucas/dnd/internal/domain/race/entities"
+import "github.com/Casagrande-Lucas/dnd/internal/domain/race/models"
 
 type RaceService interface {
-	ListRaces() ([]entities.Race, error)
-	GetRaceDetails(id uint) (*entities.Race, error)
-	RegisterRace(race *entities.Race) error
-	UpdateRaceInfo(id uint, race *entities.Race) error
+	ListRaces() ([]*models.Race, error)
+	GetRaceDetails(id uint) (*models.Race, error)
+	RegisterRace(race *models.Race) error
+	UpdateRaceInfo(id uint, race *models.Race) error
 	RemoveRace(id uint) error
-	AddSubraceToRace(raceID uint, subrace *entities.Subrace) error
+	AddSubraceToRace(raceID uint, subrace *models.Subrace) error
 	DetachSubraceFromRace(raceID uint, subraceID uint) error
 	AssignTraitToRace(raceID uint, traitID uint) error
 	UnassignTraitFromRace(raceID uint, traitID uint) error
-	FindRaces(criteria map[string]string) ([]entities.Race, error)
+	FindRaces(criteria map[string]string) ([]models.Race, error)
 }

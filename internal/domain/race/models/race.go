@@ -1,4 +1,4 @@
-package entities
+package models
 
 type Race struct {
 	ID                  uint          `json:"id" gorm:"primaryKey"`

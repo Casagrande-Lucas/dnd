@@ -1,4 +1,4 @@
-package entities
+package models
 
 type Age struct {
 	RaceID          uint   `json:"race_id" gorm:"primaryKey"`
