@@ -157,11 +157,6 @@ func (r *raceRepositoryGormImpl) UpdateRace(id uint, race *models.Race) error {
 		return err
 	}
 
-	if err := tx.Model(&existingRace).Association("Languages").Replace(race.Languages); err != nil {
-		tx.Rollback()
-		return err
-	}
-
 	if err := tx.Save(&existingRace).Error; err != nil {
 		tx.Rollback()
 		return err

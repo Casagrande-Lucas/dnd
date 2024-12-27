@@ -49,7 +49,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httperror.ErrorMSG"
+                            "$ref": "#/definitions/httperror.ErrorResponse"
                         }
                     }
                 }
@@ -57,18 +57,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "httperror.ErrorMSG": {
+        "httperror.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error_code": {
                     "type": "string"
                 },
-                "error_msg": {
+                "error_message": {
                     "type": "string"
                 }
             }
         },
-        "models.AbilityBonus": {
+        "models.AbilityScoreBonuses": {
             "type": "object",
             "properties": {
                 "charisma": {
@@ -137,7 +137,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "ability_score_bonuses": {
-                    "$ref": "#/definitions/models.AbilityBonus"
+                    "$ref": "#/definitions/models.AbilityScoreBonuses"
                 },
                 "age": {
                     "$ref": "#/definitions/models.Age"
@@ -150,12 +150,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
-                },
-                "languages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Language"
-                    }
                 },
                 "languages_known": {
                     "type": "array",
@@ -196,7 +190,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "ability_score_bonuses": {
-                    "$ref": "#/definitions/models.AbilityBonus"
+                    "$ref": "#/definitions/models.AbilityScoreBonuses"
                 },
                 "description": {
                     "type": "string"

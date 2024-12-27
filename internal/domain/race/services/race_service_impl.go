@@ -211,16 +211,10 @@ func validateRace(race *models.Race) error {
 		}
 	}
 
-	for _, lang := range race.Languages {
-		if err := validateLanguage(&lang); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
-func validateAbilityBonus(bonus *models.AbilityBonus) error {
+func validateAbilityBonus(bonus *models.AbilityScoreBonuses) error {
 	var errMsgs []string
 
 	if bonus.Strength < 0 {

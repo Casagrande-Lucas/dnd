@@ -8,14 +8,14 @@ import (
 	"github.com/Casagrande-Lucas/dnd/pkg/failure"
 )
 
-type ErrorMSG struct {
-	ErrorCode string `json:"error_code"`
-	ErrorMSG  string `json:"error_msg"`
+type ErrorResponse struct {
+	Code string `json:"error_code"`
+	MSG  string `json:"error_message"`
 }
 
 type APIError struct {
-	StatusCode int      `json:"status_code"`
-	ErrorMSG   ErrorMSG `json:"error"`
+	StatusCode int           `json:"status_code"`
+	ObjectErr  ErrorResponse `json:"error"`
 }
 
 func FormError(err error) APIError {
@@ -47,7 +47,7 @@ func FormError(err error) APIError {
 		}
 
 		msg := svcError.SvcErr().Error()
-		apiError.ErrorMSG = ErrorMSG{ErrorCode: fmt.Sprintf("%d", apiError.StatusCode), ErrorMSG: msg}
+		apiError.ObjectErr = ErrorResponse{Code: fmt.Sprintf("%d", apiError.StatusCode), MSG: msg}
 	}
 	return apiError
 }

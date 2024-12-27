@@ -29,14 +29,14 @@ func NewRaceControllerGin(service services.RaceService) RaceController {
 // @Accept  json
 // @Produce  json
 // @Success 200 {array} models.Race
-// @Failure 500 {object} httperror.ErrorMSG
+// @Failure 500 {object} httperror.ErrorResponse
 // @Router /races [get]
 // GetAllRaces handles GET /races to retrieve all races.
 func (c *raceControllerGin) GetAllRaces(ctx *gin.Context) {
 	races, err := c.service.ListRaces()
 	if err != nil {
 		apiError := httperror.FormError(err)
-		ctx.JSON(apiError.StatusCode, apiError.ErrorMSG)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.JSON(http.StatusOK, races)

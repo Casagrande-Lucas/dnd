@@ -1,13 +1,13 @@
 basePath: /api/v1
 definitions:
-  httperror.ErrorMSG:
+  httperror.ErrorResponse:
     properties:
       error_code:
         type: string
-      error_msg:
+      error_message:
         type: string
     type: object
-  models.AbilityBonus:
+  models.AbilityScoreBonuses:
     properties:
       charisma:
         type: integer
@@ -52,7 +52,7 @@ definitions:
   models.Race:
     properties:
       ability_score_bonuses:
-        $ref: '#/definitions/models.AbilityBonus'
+        $ref: '#/definitions/models.AbilityScoreBonuses'
       age:
         $ref: '#/definitions/models.Age'
       alignment:
@@ -61,10 +61,6 @@ definitions:
         type: string
       id:
         type: integer
-      languages:
-        items:
-          $ref: '#/definitions/models.Language'
-        type: array
       languages_known:
         items:
           $ref: '#/definitions/models.Language'
@@ -91,7 +87,7 @@ definitions:
   models.Subrace:
     properties:
       ability_score_bonuses:
-        $ref: '#/definitions/models.AbilityBonus'
+        $ref: '#/definitions/models.AbilityScoreBonuses'
       description:
         type: string
       id:
@@ -140,7 +136,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httperror.ErrorMSG'
+            $ref: '#/definitions/httperror.ErrorResponse'
       summary: List all races
       tags:
       - Races
