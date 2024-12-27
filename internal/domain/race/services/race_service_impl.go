@@ -7,6 +7,7 @@ import (
 	"github.com/Casagrande-Lucas/dnd/internal/domain/race/models"
 	"github.com/Casagrande-Lucas/dnd/internal/domain/race/repositories"
 	"github.com/Casagrande-Lucas/dnd/pkg/failure"
+	"github.com/google/uuid"
 )
 
 // raceServiceImpl is the concrete implementation of RaceService.
@@ -24,148 +25,148 @@ func NewRaceService(repo repositories.RaceRepository) RaceService {
 func (s *raceServiceImpl) ListRaces() ([]*models.Race, error) {
 	races, err := s.repo.GetAllRaces()
 	if err != nil {
-		return nil, failure.NewError(failure.ErrorInternalServer, err)
+		return nil, failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to get list races: %w", err))
 	}
 	return races, nil
 }
 
-func (s *raceServiceImpl) GetRaceDetails(id uint) (*models.Race, error) {
-	if id == 0 {
-		return nil, fmt.Errorf("invalid race ID: %d", id)
+func (s *raceServiceImpl) GetRaceDetails(id uuid.UUID) (*models.Race, error) {
+	if id == uuid.Nil {
+		return nil, failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race ID: %s", id.String()))
 	}
 
 	race, err := s.repo.GetRaceByID(id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get race details by ID: %w", err)
+		return nil, failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to get race details by ID: %w", err))
 	}
 	return race, nil
 }
 
 func (s *raceServiceImpl) RegisterRace(race *models.Race) error {
 	if err := validateRace(race); err != nil {
-		return fmt.Errorf("invalid race data: %w", err)
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race data: %w", err))
 	}
 
 	existingRace, _ := s.repo.GetRaceByName(race.Name)
 	if existingRace != nil {
-		return fmt.Errorf("race with name '%s' already exists", race.Name)
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("race with name '%s' already exists", race.Name))
 	}
 
 	if err := s.repo.CreateRace(race); err != nil {
-		return fmt.Errorf("failed to register race: %w", err)
+		return failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to register race: %w", err))
 	}
 	return nil
 }
 
-func (s *raceServiceImpl) UpdateRaceInfo(id uint, race *models.Race) error {
-	if id == 0 {
-		return fmt.Errorf("invalid race ID: %d", id)
+func (s *raceServiceImpl) UpdateRaceInfo(id uuid.UUID, race *models.Race) error {
+	if id == uuid.Nil {
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race ID: %s", id.String()))
 	}
 
 	if err := validateRace(race); err != nil {
-		return fmt.Errorf("invalid race data: %w", err)
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race data: %w", err))
 	}
 
 	existingRace, err := s.repo.GetRaceByID(id)
 	if err != nil {
-		return fmt.Errorf("race with ID %d does not exist: %w", id, err)
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("race with ID %d does not exist: %w", id, err))
 	}
 
 	if existingRace.Name != race.Name {
 		duplicateRace, _ := s.repo.GetRaceByName(race.Name)
 		if duplicateRace != nil {
-			return fmt.Errorf("race with name '%s' already exists", race.Name)
+			return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("race with name '%s' already exists", race.Name))
 		}
 	}
 
 	if err := s.repo.UpdateRace(id, race); err != nil {
-		return fmt.Errorf("failed to update race info: %w", err)
+		return failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to update race info: %w", err))
 	}
 	return nil
 }
 
-func (s *raceServiceImpl) RemoveRace(id uint) error {
-	if id == 0 {
-		return fmt.Errorf("invalid race ID: %d", id)
+func (s *raceServiceImpl) RemoveRace(id uuid.UUID) error {
+	if id == uuid.Nil {
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race ID: %s", id.String()))
 	}
 
 	_, err := s.repo.GetRaceByID(id)
 	if err != nil {
-		return fmt.Errorf("race with ID %d does not exist: %w", id, err)
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("race with ID %d does not exist: %w", id, err))
 	}
 
 	if err := s.repo.DeleteRace(id); err != nil {
-		return fmt.Errorf("failed to remove race: %w", err)
+		return failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to remove race: %w", err))
 	}
 	return nil
 }
 
-func (s *raceServiceImpl) AddSubraceToRace(raceID uint, subrace *models.Subrace) error {
-	if raceID == 0 {
-		return fmt.Errorf("invalid race ID: %d", raceID)
+func (s *raceServiceImpl) AddSubraceToRace(raceID uuid.UUID, subrace *models.Subrace) error {
+	if raceID == uuid.Nil {
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race ID: %s", raceID.String()))
 	}
 	if subrace == nil {
-		return errors.New("subrace cannot be nil")
+		return failure.NewError(failure.ErrorBadRequest, errors.New("subrace cannot be nil"))
 	}
 
 	if err := validateSubrace(subrace); err != nil {
-		return fmt.Errorf("invalid subrace data: %w", err)
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid subrace data: %w", err))
 	}
 
 	if err := s.repo.AddSubrace(raceID, subrace); err != nil {
-		return fmt.Errorf("failed to add subrace to race: %w", err)
+		return failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to add subrace to race: %w", err))
 	}
 	return nil
 }
 
-func (s *raceServiceImpl) DetachSubraceFromRace(raceID uint, subraceID uint) error {
-	if raceID == 0 || subraceID == 0 {
-		return fmt.Errorf("invalid race ID or subrace ID: raceID=%d, subraceID=%d", raceID, subraceID)
+func (s *raceServiceImpl) DetachSubraceFromRace(raceID uuid.UUID, subraceID uuid.UUID) error {
+	if raceID == uuid.Nil || subraceID == uuid.Nil {
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race ID or subrace ID: raceID=%d, subraceID=%d", raceID.String(), subraceID.String()))
 	}
 
 	if err := s.repo.RemoveSubrace(raceID, subraceID); err != nil {
-		return fmt.Errorf("failed to detach subrace from race: %w", err)
+		return failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to detach subrace from race: %w", err))
 	}
 	return nil
 }
 
-func (s *raceServiceImpl) AssignTraitToRace(raceID uint, traitID uint) error {
-	if raceID == 0 || traitID == 0 {
-		return fmt.Errorf("invalid race ID or trait ID: raceID=%d, traitID=%d", raceID, traitID)
+func (s *raceServiceImpl) AssignTraitToRace(raceID uuid.UUID, traitID uuid.UUID) error {
+	if raceID == uuid.Nil || traitID == uuid.Nil {
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race ID or trait ID: raceID=%d, traitID=%d", raceID.String(), traitID.String()))
 	}
 
 	if err := s.repo.AddTrait(raceID, traitID); err != nil {
-		return fmt.Errorf("failed to assign trait to race: %w", err)
+		return failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to assign trait to race: %w", err))
 	}
 	return nil
 }
 
-func (s *raceServiceImpl) UnassignTraitFromRace(raceID uint, traitID uint) error {
-	if raceID == 0 || traitID == 0 {
-		return fmt.Errorf("invalid race ID or trait ID: raceID=%d, traitID=%d", raceID, traitID)
+func (s *raceServiceImpl) UnassignTraitFromRace(raceID uuid.UUID, traitID uuid.UUID) error {
+	if raceID == uuid.Nil || traitID == uuid.Nil {
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid race ID or trait ID: raceID=%d, traitID=%d", raceID.String(), traitID.String()))
 	}
 
 	if err := s.repo.RemoveTrait(raceID, traitID); err != nil {
-		return fmt.Errorf("failed to unassign trait from race: %w", err)
+		return failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to unassign trait from race: %w", err))
 	}
 	return nil
 }
 
 func (s *raceServiceImpl) FindRaces(criteria map[string]string) ([]models.Race, error) {
 	if len(criteria) == 0 {
-		return nil, errors.New("no search criteria provided")
+		return nil, failure.NewError(failure.ErrorBadRequest, errors.New("no search criteria provided"))
 	}
 
 	races, err := s.repo.SearchRaces(criteria)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find races: %w", err)
+		return nil, failure.NewError(failure.ErrorInternalServer, fmt.Errorf("failed to find races: %w", err))
 	}
 	return races, nil
 }
 
 func validateRace(race *models.Race) error {
 	if race.Name == "" {
-		return errors.New("race name cannot be empty")
+		return failure.NewError(failure.ErrorBadRequest, errors.New("race name cannot be empty"))
 	}
 	validSizes := map[string]bool{
 		"Small":  true,
@@ -173,41 +174,41 @@ func validateRace(race *models.Race) error {
 		"Large":  true,
 	}
 	if !validSizes[race.Size] {
-		return fmt.Errorf("invalid size: %s", race.Size)
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid size: %s", race.Size))
 	}
 	if race.Speed <= 0 {
-		return fmt.Errorf("invalid speed: %d", race.Speed)
+		return failure.NewError(failure.ErrorBadRequest, fmt.Errorf("invalid speed: %d", race.Speed))
 	}
 
 	if err := validateAbilityBonus(&race.AbilityScoreBonuses); err != nil {
-		return err
+		return failure.NewError(failure.ErrorBadRequest, err)
 	}
 
 	if err := validateAge(&race.Age); err != nil {
-		return err
+		return failure.NewError(failure.ErrorBadRequest, err)
 	}
 
 	for _, prof := range race.Proficiencies {
 		if err := validateProficiency(&prof); err != nil {
-			return err
+			return failure.NewError(failure.ErrorBadRequest, err)
 		}
 	}
 
 	for _, lang := range race.LanguagesKnown {
 		if err := validateLanguage(&lang); err != nil {
-			return err
+			return failure.NewError(failure.ErrorBadRequest, err)
 		}
 	}
 
 	for _, trait := range race.Traits {
 		if err := validateTrait(&trait); err != nil {
-			return err
+			return failure.NewError(failure.ErrorBadRequest, err)
 		}
 	}
 
 	for _, subrace := range race.Subraces {
 		if err := validateSubrace(&subrace); err != nil {
-			return err
+			return failure.NewError(failure.ErrorBadRequest, err)
 		}
 	}
 

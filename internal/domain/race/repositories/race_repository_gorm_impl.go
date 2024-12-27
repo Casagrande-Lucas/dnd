@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Casagrande-Lucas/dnd/internal/domain/race/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -28,7 +29,6 @@ func (r *raceRepositoryGormImpl) GetAllRaces() ([]*models.Race, error) {
 		Preload("Traits").
 		Preload("Subraces").
 		Preload("Age").
-		Preload("Languages").
 		Find(&races).Error; err != nil {
 		return nil, err
 	}
@@ -36,17 +36,17 @@ func (r *raceRepositoryGormImpl) GetAllRaces() ([]*models.Race, error) {
 }
 
 // GetRaceByID retrieves a race by its ID, including its related entities.
-func (r *raceRepositoryGormImpl) GetRaceByID(id uint) (*models.Race, error) {
+func (r *raceRepositoryGormImpl) GetRaceByID(id uuid.UUID) (*models.Race, error) {
 	var race models.Race
 	if err := r.db.Preload("Proficiencies").
 		Preload("LanguagesKnown").
 		Preload("Traits").
 		Preload("Subraces").
 		Preload("Age").
-		Preload("Languages").
-		First(&race, id).Error; err != nil {
+		First(&race, "id = ?", id).Error; err != nil {
+
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("race with ID %d not found", id)
+			return nil, fmt.Errorf("race with ID %s not found", id.String())
 		}
 		return nil, err
 	}
@@ -61,7 +61,6 @@ func (r *raceRepositoryGormImpl) GetRaceByName(name string) (*models.Race, error
 		Preload("Traits").
 		Preload("Subraces").
 		Preload("Age").
-		Preload("Languages").
 		Where("name = ?", name).
 		First(&race).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -98,7 +97,7 @@ func (r *raceRepositoryGormImpl) CreateRace(race *models.Race) error {
 }
 
 // UpdateRace updates an existing race's details in the database.
-func (r *raceRepositoryGormImpl) UpdateRace(id uint, race *models.Race) error {
+func (r *raceRepositoryGormImpl) UpdateRace(id uuid.UUID, race *models.Race) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -116,11 +115,10 @@ func (r *raceRepositoryGormImpl) UpdateRace(id uint, race *models.Race) error {
 		Preload("Traits").
 		Preload("Subraces").
 		Preload("Age").
-		Preload("Languages").
-		First(&existingRace, id).Error; err != nil {
+		First(&existingRace, "id = ?", id).Error; err != nil {
 		tx.Rollback()
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("race with ID %d not found", id)
+			return fmt.Errorf("race with ID %s not found", id.String())
 		}
 		return err
 	}
@@ -166,7 +164,7 @@ func (r *raceRepositoryGormImpl) UpdateRace(id uint, race *models.Race) error {
 }
 
 // DeleteRace removes a race from the database.
-func (r *raceRepositoryGormImpl) DeleteRace(id uint) error {
+func (r *raceRepositoryGormImpl) DeleteRace(id uuid.UUID) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -179,7 +177,7 @@ func (r *raceRepositoryGormImpl) DeleteRace(id uint) error {
 	}()
 
 	var race models.Race
-	if err := tx.First(&race, id).Error; err != nil {
+	if err := tx.First(&race, "id = ?", id).Error; err != nil {
 		tx.Rollback()
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("race with ID %d not found", id)
@@ -196,7 +194,7 @@ func (r *raceRepositoryGormImpl) DeleteRace(id uint) error {
 }
 
 // AddSubrace adds a subrace to a specific race.
-func (r *raceRepositoryGormImpl) AddSubrace(raceID uint, subrace *models.Subrace) error {
+func (r *raceRepositoryGormImpl) AddSubrace(raceID uuid.UUID, subrace *models.Subrace) error {
 	var race models.Race
 	if err := r.db.First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -214,7 +212,7 @@ func (r *raceRepositoryGormImpl) AddSubrace(raceID uint, subrace *models.Subrace
 }
 
 // RemoveSubrace removes a subrace from a specific race.
-func (r *raceRepositoryGormImpl) RemoveSubrace(raceID uint, subraceID uint) error {
+func (r *raceRepositoryGormImpl) RemoveSubrace(raceID uuid.UUID, subraceID uuid.UUID) error {
 	var subrace models.Subrace
 	if err := r.db.Where("id = ? AND race_id = ?", subraceID, raceID).First(&subrace).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -231,7 +229,7 @@ func (r *raceRepositoryGormImpl) RemoveSubrace(raceID uint, subraceID uint) erro
 }
 
 // AddTrait associates a trait with a specific race.
-func (r *raceRepositoryGormImpl) AddTrait(raceID uint, traitID uint) error {
+func (r *raceRepositoryGormImpl) AddTrait(raceID uuid.UUID, traitID uuid.UUID) error {
 	var race models.Race
 	if err := r.db.Preload("Traits").First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -252,7 +250,7 @@ func (r *raceRepositoryGormImpl) AddTrait(raceID uint, traitID uint) error {
 }
 
 // RemoveTrait dissociates a trait from a specific race.
-func (r *raceRepositoryGormImpl) RemoveTrait(raceID uint, traitID uint) error {
+func (r *raceRepositoryGormImpl) RemoveTrait(raceID uuid.UUID, traitID uuid.UUID) error {
 	var race models.Race
 	if err := r.db.Preload("Traits").First(&race, raceID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -279,8 +277,7 @@ func (r *raceRepositoryGormImpl) SearchRaces(criteria map[string]string) ([]mode
 		Preload("LanguagesKnown").
 		Preload("Traits").
 		Preload("Subraces").
-		Preload("Age").
-		Preload("Languages")
+		Preload("Age")
 
 	for key, value := range criteria {
 		switch key {

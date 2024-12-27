@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/Casagrande-Lucas/dnd/internal/domain/race/models"
 	"github.com/Casagrande-Lucas/dnd/internal/domain/race/services"
 	"github.com/Casagrande-Lucas/dnd/pkg/httperror"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // raceControllerGin is a concrete implementation of RaceController using the Gin framework.
@@ -23,15 +23,14 @@ func NewRaceControllerGin(service services.RaceService) RaceController {
 }
 
 // GetAllRaces godoc
-// @Summary List all races
-// @Description Return all registered races
-// @Tags Races
-// @Accept  json
-// @Produce  json
-// @Success 200 {array} models.Race
-// @Failure 500 {object} httperror.ErrorResponse
-// @Router /races [get]
-// GetAllRaces handles GET /races to retrieve all races.
+// @Summary      List all races
+// @Description  Return all registered races
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Success      200 {array}  models.Race
+// @Failure      500 {object} httperror.ErrorResponse
+// @Router       /races [get]
 func (c *raceControllerGin) GetAllRaces(ctx *gin.Context) {
 	races, err := c.service.ListRaces()
 	if err != nil {
@@ -42,168 +41,283 @@ func (c *raceControllerGin) GetAllRaces(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, races)
 }
 
-// GetRaceByID handles GET /races/:id to retrieve a race by its ID.
+// GetRaceByID godoc
+// @Summary      Get race by ID
+// @Description  Retrieve a race using the provided ID
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Race ID (UUID)"
+// @Success      200  {object}  models.Race
+// @Failure      400  {object}  httperror.ErrorResponse
+// @Failure      404  {object}  httperror.ErrorResponse
+// @Router       /races/{id} [get]
 func (c *raceControllerGin) GetRaceByID(ctx *gin.Context) {
 	idStr := ctx.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid race ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
-	race, err := c.service.GetRaceDetails(uint(id))
+	race, err := c.service.GetRaceDetails(id)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.JSON(http.StatusOK, race)
 }
 
-// CreateRace handles POST /races to create a new race.
+// CreateRace godoc
+// @Summary      Create race
+// @Description  Create a new race
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Param        race  body      models.Race  true  "Race info"
+// @Success      201   {object}  models.Race
+// @Failure      400   {object}  httperror.ErrorResponse
+// @Failure      500   {object}  httperror.ErrorResponse
+// @Router       /races [post]
 func (c *raceControllerGin) CreateRace(ctx *gin.Context) {
 	var race models.Race
 	if err := ctx.ShouldBindJSON(&race); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
 	if err := c.service.RegisterRace(&race); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.JSON(http.StatusCreated, race)
 }
 
-// UpdateRace handles PUT /races/:id to update an existing race.
+// UpdateRace godoc
+// @Summary      Update race
+// @Description  Update an existing race
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string       true  "Race ID (UUID)"
+// @Param        race  body      models.Race  true  "Race info"
+// @Success      200   {object}  models.Race
+// @Failure      400   {object}  httperror.ErrorResponse
+// @Failure      404   {object}  httperror.ErrorResponse
+// @Router       /races/{id} [put]
 func (c *raceControllerGin) UpdateRace(ctx *gin.Context) {
 	idStr := ctx.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid race ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
 	var race models.Race
 	if err := ctx.ShouldBindJSON(&race); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
-	if err := c.service.UpdateRaceInfo(uint(id), &race); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.service.UpdateRaceInfo(id, &race); err != nil {
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.JSON(http.StatusOK, race)
 }
 
-// DeleteRace handles DELETE /races/:id to remove a race.
+// DeleteRace godoc
+// @Summary      Delete race
+// @Description  Delete an existing race
+// @Tags         Races
+// @Param        id   path      string  true  "Race ID (UUID)"
+// @Success      204
+// @Failure      400 {object} httperror.ErrorResponse
+// @Failure      404 {object} httperror.ErrorResponse
+// @Router       /races/{id} [delete]
 func (c *raceControllerGin) DeleteRace(ctx *gin.Context) {
 	idStr := ctx.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid race ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
-	if err := c.service.RemoveRace(uint(id)); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.service.RemoveRace(id); err != nil {
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.Status(http.StatusNoContent)
 }
 
-// AddSubrace handles POST /races/:id/subraces to add a subrace to a race.
+// AddSubrace godoc
+// @Summary      Add subrace
+// @Description  Add a new subrace to an existing race
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Param        id       path      string          true  "Race ID (UUID)"
+// @Param        subrace  body      models.Subrace  true  "Subrace info"
+// @Success      201 {object} models.Subrace
+// @Failure      400 {object} httperror.ErrorResponse
+// @Failure      500 {object} httperror.ErrorResponse
+// @Router       /races/{id}/subraces [post]
 func (c *raceControllerGin) AddSubrace(ctx *gin.Context) {
 	idStr := ctx.Param("id")
-	raceID, err := strconv.Atoi(idStr)
+	raceID, err := uuid.Parse(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid race ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
 	var subrace models.Subrace
 	if err := ctx.ShouldBindJSON(&subrace); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
-	if err := c.service.AddSubraceToRace(uint(raceID), &subrace); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.service.AddSubraceToRace(raceID, &subrace); err != nil {
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.JSON(http.StatusCreated, subrace)
 }
 
-// RemoveSubrace handles DELETE /races/:id/subraces/:subraceID to remove a subrace from a race.
+// RemoveSubrace godoc
+// @Summary      Remove subrace
+// @Description  Remove an existing subrace from a race
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Param        id         path  string true "Race ID (UUID)"
+// @Param        subraceID  path  string true "Subrace ID (UUID)"
+// @Success      204
+// @Failure      400 {object} httperror.ErrorResponse
+// @Failure      404 {object} httperror.ErrorResponse
+// @Router       /races/{id}/subraces/{subraceID} [delete]
 func (c *raceControllerGin) RemoveSubrace(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	subraceIDStr := ctx.Param("subraceID")
 
-	raceID, err := strconv.Atoi(idStr)
+	raceID, err := uuid.Parse(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid race ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
-	subraceID, err := strconv.Atoi(subraceIDStr)
+	subraceID, err := uuid.Parse(subraceIDStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid subrace ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
-	if err := c.service.DetachSubraceFromRace(uint(raceID), uint(subraceID)); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.service.DetachSubraceFromRace(raceID, subraceID); err != nil {
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.Status(http.StatusNoContent)
 }
 
-// AddTrait handles POST /races/:id/traits/:traitID to assign a trait to a race.
+// AddTrait godoc
+// @Summary      Add trait to race
+// @Description  Add a new trait to an existing race
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Param        id       path  string  true  "Race ID (UUID)"
+// @Param        traitID  path  string  true  "Trait ID (UUID)"
+// @Success      201
+// @Failure      400 {object} httperror.ErrorResponse
+// @Failure      404 {object} httperror.ErrorResponse
+// @Router       /races/{id}/traits/{traitID} [post]
 func (c *raceControllerGin) AddTrait(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	traitIDStr := ctx.Param("traitID")
 
-	raceID, err := strconv.Atoi(idStr)
+	raceID, err := uuid.Parse(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid race ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
-	traitID, err := strconv.Atoi(traitIDStr)
+	traitID, err := uuid.Parse(traitIDStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid trait ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
-	if err := c.service.AssignTraitToRace(uint(raceID), uint(traitID)); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.service.AssignTraitToRace(raceID, traitID); err != nil {
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.Status(http.StatusCreated)
 }
 
-// RemoveTrait handles DELETE /races/:id/traits/:traitID to unassign a trait from a race.
+// RemoveTrait godoc
+// @Summary      Remove trait from race
+// @Description  Remove an existing trait from a race
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Param        id       path  string  true  "Race ID (UUID)"
+// @Param        traitID  path  string  true  "Trait ID (UUID)"
+// @Success      204
+// @Failure      400 {object} httperror.ErrorResponse
+// @Failure      404 {object} httperror.ErrorResponse
+// @Router       /races/{id}/traits/{traitID} [delete]
 func (c *raceControllerGin) RemoveTrait(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	traitIDStr := ctx.Param("traitID")
 
-	raceID, err := strconv.Atoi(idStr)
+	raceID, err := uuid.Parse(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid race ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
-	traitID, err := strconv.Atoi(traitIDStr)
+	traitID, err := uuid.Parse(traitIDStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid trait ID"})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 
-	if err := c.service.UnassignTraitFromRace(uint(raceID), uint(traitID)); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.service.UnassignTraitFromRace(raceID, traitID); err != nil {
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.Status(http.StatusNoContent)
 }
 
-// SearchRaces handles GET /races/search?key=value to search for races based on criteria.
+// SearchRaces godoc
+// @Summary      Search races
+// @Description  Search for races based on query parameters
+// @Tags         Races
+// @Accept       json
+// @Produce      json
+// @Param        key    query  string false "Key to filter"
+// @Param        value  query  string false "Value to filter"
+// @Success      200 {array}  models.Race
+// @Failure      400 {object} httperror.ErrorResponse
+// @Failure      500 {object} httperror.ErrorResponse
+// @Router       /races/search [get]
 func (c *raceControllerGin) SearchRaces(ctx *gin.Context) {
 	criteria := make(map[string]string)
 	queryParams := ctx.Request.URL.Query()
@@ -215,7 +329,8 @@ func (c *raceControllerGin) SearchRaces(ctx *gin.Context) {
 
 	races, err := c.service.FindRaces(criteria)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiError := httperror.FormError(err)
+		ctx.JSON(apiError.StatusCode, apiError.ObjectErr)
 		return
 	}
 	ctx.JSON(http.StatusOK, races)

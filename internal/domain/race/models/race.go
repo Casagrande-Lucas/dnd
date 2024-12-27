@@ -1,11 +1,13 @@
 package models
 
+import "github.com/google/uuid"
+
 type Race struct {
-	ID                  uint                `json:"id" gorm:"primaryKey"`
+	ID                  uuid.UUID           `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey" swaggertype:"string" format:"uuid" example:"123e4567-e89b-12d3-a456-426614174000"`
 	Name                string              `json:"name" gorm:"unique;not null"`
 	Description         string              `json:"description"`
 	AbilityScoreBonuses AbilityScoreBonuses `json:"ability_score_bonuses" gorm:"embedded"`
-	Age                 Age                 `json:"age" gorm:"foreignKey:RaceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Age                 Age                 `json:"age" gorm:"foreignKey:RaceID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Size                string              `json:"size"`
 	Speed               int8                `json:"speed"`
 	Alignment           string              `json:"alignment,omitempty"`
