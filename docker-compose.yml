@@ -12,12 +12,14 @@ services:
       - ./config.yaml:/app/config.yaml
 
   dnd_db:
-    image: postgres:17.2
+    image: postgres
     container_name: dnd-db
     environment:
       POSTGRES_USER: lcasa
       POSTGRES_PASSWORD: test123
       POSTGRES_DB: dnd_db
+    ports:
+      - "5433:5432"
 
 volumes:
   dnd_db:
