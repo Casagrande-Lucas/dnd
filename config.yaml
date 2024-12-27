@@ -25,4 +25,4 @@ cors:
 
 db:
   type: postgres
-  dsn: "postgres://lcasa:734826@localhost:5432/dnd_db?sslmode=disable"
+  dsn: "postgres://lcasa:test123@dnd_db:5432/dnd_db?sslmode=disable"

@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    image: dnd-app:1.0.0
+    container_name: dnd-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - dnd_db
+    volumes:
+      - ./config.yaml:/app/config.yaml
+
+  dnd_db:
+    image: postgres:17.2
+    container_name: dnd-db
+    environment:
+      POSTGRES_USER: lcasa
+      POSTGRES_PASSWORD: test123
+      POSTGRES_DB: dnd_db
+
+volumes:
+  dnd_db:
